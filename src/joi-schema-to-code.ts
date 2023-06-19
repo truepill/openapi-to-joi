@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import Joi, { Description } from "joi"
+import enjoi from "enjoi"
+import Joi, { Description, Schema } from "joi"
+import { OpenAPIV3 } from "openapi-types"
 
 type PresenceType = "optional" | "required" | "forbidden"
 
@@ -729,6 +731,26 @@ const anyDescriptionToString = (description: Description) => {
   return parts.join("")
 }
 
+const alternativesDescriptionToString = (description: Description) => {
+
+  console.log(description)
+  const subTypes = description.matches ? description.matches.map((match: any) => {
+    return descriptionToString(match.schema)
+  }) : []
+
+  let parts = [`Joi.alternatives().try(${subTypes.join(", ")})`]
+
+  if((description.flags as any)["match"] === 'all') {
+    parts.push('match("all")')
+  }
+
+  if((description.flags as any)["presence"] === 'required') {
+    parts.push('required()')
+  }
+
+  return parts.join(".")
+}
+
 const arrayDescriptionToString = (description: Description) => {
   const parts: string[] = ["Joi.array()"]
 
@@ -880,12 +902,12 @@ const descriptionToString = (description: Description) => {
 
     case "number":
       return numberDescriptionToString(description)
-
     case "object":
       return objectDescriptionToString(description)
-
     case "string":
       return stringDescriptionToString(description)
+    case "alternatives": 
+      return alternativesDescriptionToString(description)
 
     default:
       throw new Error(`Unexpected type: ${description.type}`)
@@ -900,7 +922,7 @@ const addPresenceToDescription = (
   description.flags = { ...(description.flags ?? {}), presence }
 }
 
-export default (schema: Joi.AnySchema, presence?: PresenceType) => {
+function joiSchemaToCode(schema: Joi.AnySchema, presence?: PresenceType) {
   const description = schema.describe()
   if (presence !== undefined) {
     addPresenceToDescription(description, presence)
@@ -908,3 +930,5 @@ export default (schema: Joi.AnySchema, presence?: PresenceType) => {
 
   return descriptionToString(description)
 }
+
+export default joiSchemaToCode
