@@ -1,11 +1,17 @@
 {
   "name": "@savotije/openapi-to-joi",
-  "version": "2.1.0",
-  "main": "./dist/cli.js",
-  "typings": "./dist/cli.d.ts",
+  "version": "2.1.1",
+  "description": "Generates Joi schemas from an OpenAPI v3 documents.",
+  "homepage": "https://github.com/savotije/openapi-to-joi#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/savotije/openapi-to-joi.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "bugs": {
+    "url": "https://github.com/savotije/openapi-to-joi/issues"
   },
   "author": "Savotije Petrovic <savotije@gmail.com>",
   "contributors": [
@@ -20,6 +26,20 @@
     "openapi",
     "schema",
     "swagger"
+  ],
+  "scripts": {
+    "start": "ts-node src/cli.ts",
+    "build": "tsc --build tsconfig.build.json",
+    "lint": "tsc --noEmit && prettier -c . && eslint .",
+    "test": "jest"
+  },
+  "main": "./dist/cli.js",
+  "typings": "./dist/cli.d.ts",
+  "bin": {
+    "openapi-to-joi": "dist/cli.js"
+  },
+  "files": [
+    "dist"
   ],
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
@@ -45,19 +65,5 @@
     "ts-jest": "^28.0.5",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.4"
-  },
-  "scripts": {
-    "start": "ts-node src/cli.ts",
-    "build": "tsc --build tsconfig.build.json",
-    "lint": "tsc --noEmit && prettier -c . && eslint .",
-    "test": "jest"
-  },
-  "bin": {
-    "openapi-to-joi": "./dist/cli.js"
-  },
-  "description": "Generates Joi schemas from an OpenAPI v3 documents.",
-  "bugs": {
-    "url": "https://github.com/savotije/openapi-to-joi/issues"
-  },
-  "homepage": "https://github.com/savotije/openapi-to-joi#readme"
+  }
 }
