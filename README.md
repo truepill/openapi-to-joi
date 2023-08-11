@@ -59,10 +59,12 @@ For example, starting with this document:
         "properties": {
           "email": {
             "type": "string",
+            "description": "Valid email address",
             "format": "email"
           },
           "age": {
             "type": "integer",
+            "description": "Age of adult",
             "format": "int32",
             "minimum": 18,
             "maximum": 99
@@ -83,8 +85,6 @@ $ openapi-to-joi openapi.json --output generated.ts --skip-descriptions
 Produces this `generated.ts`:
 
 ```typescript
-/* eslint-disable */
-/* prettier-ignore */
 import Joi from "joi"
 
 export const schemas = {

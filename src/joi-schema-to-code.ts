@@ -158,9 +158,6 @@ const appendDefault = (parts: string[], description: Description) => {
 }
 
 const appendDescription = (parts: string[], description: Description) => {
-  if (genOptions.skipDescriptions) {
-    return
-  }
   const flags = description.flags as FlagsType | undefined
   if (flags?.description !== undefined && flags?.description !== "") {
     parts.push(`.description(${JSON.stringify(flags.description)})`)
@@ -924,22 +921,38 @@ const addPresenceToDescription = (
   description.flags = { ...(description.flags ?? {}), presence }
 }
 
-interface GeneratorOptions {
-  presence?: PresenceType
-  skipDescriptions?: boolean
+const removeFromFlags = (description: Description, property: string) => {
+  Object.entries(description)
+    .filter(([, value]) => value instanceof Object)
+    .forEach(([key, value]) =>
+      key === "flags"
+        ? Reflect.deleteProperty(value as FlagsType, property)
+        : removeFromFlags(value, property)
+    )
 }
 
-const genOptions: GeneratorOptions = {}
+export interface GeneratorOptions {
+  presence?: PresenceType
+  skipDescriptions?: boolean
+  skipUnknowns?: boolean
+}
 
 export const joiSchemaToCode = (
   schema: Joi.AnySchema,
   options?: GeneratorOptions
 ) => {
-  Object.assign(genOptions, options ?? {})
-
   const description = schema.describe()
+
   if (options?.presence) {
     addPresenceToDescription(description, options.presence)
+  }
+
+  if (options?.skipDescriptions) {
+    removeFromFlags(description, "description")
+  }
+
+  if (options?.skipUnknowns) {
+    removeFromFlags(description, "unknown")
   }
 
   return descriptionToString(description)

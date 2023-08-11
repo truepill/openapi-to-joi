@@ -3,12 +3,13 @@ import enjoi from "enjoi"
 import Joi from "joi"
 import { OpenAPIV3 } from "openapi-types"
 import prettier from "prettier"
-import { joiSchemaToCode } from "./joi-schema-to-code"
+import { joiSchemaToCode, GeneratorOptions } from "./joi-schema-to-code"
 
 interface GeneratorConfig {
   schemaPath: string
   prettierConfigPath?: string
   skipDescriptions?: boolean
+  skipUnknowns?: boolean
 }
 
 const TEMPLATE = `
@@ -27,7 +28,7 @@ const httpMethods = Object.values(OpenAPIV3.HttpMethods) as string[]
 
 const getOperationSchemas = (
   document: OpenAPIV3.Document,
-  skipDescriptions?: boolean
+  options: GeneratorOptions
 ) => {
   const allOperations = (
     Object.values(document.paths) as Record<string, OpenAPIV3.OperationObject>[]
@@ -58,7 +59,7 @@ const getOperationSchemas = (
           parameter.schema! as OpenAPIV3.SchemaObject
         )
         const presence = parameter.required === true ? "required" : "optional"
-        const code = joiSchemaToCode(joiSchema, { presence, skipDescriptions })
+        const code = joiSchemaToCode(joiSchema, { presence, ...options })
         const parameterKey = JSON.stringify(parameter.name)
         return `${parameterKey}: ${code}`
       }
@@ -86,7 +87,7 @@ const getOperationSchemas = (
 
 const getComponentSchemas = (
   document: OpenAPIV3.Document,
-  skipDescriptions?: boolean
+  options: GeneratorOptions
 ) =>
   Object.entries(document.components?.schemas ?? {})
     .map(([name, schema]) => {
@@ -107,9 +108,7 @@ const getComponentSchemas = (
           return joiDescription
         },
       })
-      return `${JSON.stringify(name)}: ${joiSchemaToCode(joiSchema, {
-        skipDescriptions,
-      })}`
+      return `${JSON.stringify(name)}: ${joiSchemaToCode(joiSchema, options)}`
     })
     .join(",")
 
@@ -118,13 +117,13 @@ export const openapiSchemaToCode = async (config: GeneratorConfig) => {
     validate: { schema: false },
   })) as OpenAPIV3.Document
 
+  const { skipDescriptions, skipUnknowns } = config
+  const skips: GeneratorOptions = { skipDescriptions, skipUnknowns }
+
   const mergedTemplate = TEMPLATE.replace(
     "{OPERATION_SCHEMAS}",
-    getOperationSchemas(document, config.skipDescriptions)
-  ).replace(
-    "{COMPONENT_SCHEMAS}",
-    getComponentSchemas(document, config.skipDescriptions)
-  )
+    getOperationSchemas(document, skips)
+  ).replace("{COMPONENT_SCHEMAS}", getComponentSchemas(document, skips))
 
   const prettierOptions = (config.prettierConfigPath
     ? await prettier.resolveConfig(config.prettierConfigPath)

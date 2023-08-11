@@ -1,6 +1,6 @@
 {
   "name": "@savotije/openapi-to-joi",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Generates Joi schemas from an OpenAPI v3 documents.",
   "homepage": "https://github.com/savotije/openapi-to-joi#readme",
   "repository": {
