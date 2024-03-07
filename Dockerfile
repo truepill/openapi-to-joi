@@ -10,4 +10,4 @@ RUN yarn install && yarn cache clean
 
 ENV YARN_SILENT=1
 
-CMD ["yarn", "start"]
+ENTRYPOINT ["yarn", "start"]
